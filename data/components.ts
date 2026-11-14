@@ -1,0 +1,193 @@
+import { SpacecraftComponent } from '../types/mission';
+
+export const MARS_MISSION_LIMITS = {
+  massLimit: 1200,    // kg
+  powerLimit: 1000,   // watts
+  budgetLimit: 350,   // M USD
+  missionLife: 3,     // years
+};
+
+export const ALL_COMPONENTS: SpacecraftComponent[] = [
+  // BUS
+  {
+    id: 'bus-small',
+    name: 'SmallSat Bus',
+    category: 'bus',
+    description: 'Compact platform. Limited payload capacity but cost-effective.',
+    mass: 150, power: 50, budget: 15,
+    envImpact: 20, crewRisk: 0, scienceValue: 0,
+    icon: '🛰️',
+    envNote: 'Low mass means smaller launcher needed → less fuel burned.'
+  },
+  {
+    id: 'bus-medium',
+    name: 'Medium Platform',
+    category: 'bus',
+    description: 'Balanced bus for science missions. Used in Mars Reconnaissance Orbiter class.',
+    mass: 500, power: 100, budget: 80,
+    envImpact: 40, crewRisk: 10, scienceValue: 0,
+    icon: '🛸',
+    envNote: 'Requires medium-class launcher. Moderate environmental footprint.',
+    healthNote: 'Standard radiation shielding included.'
+  },
+  {
+    id: 'bus-large',
+    name: 'Large Observatory',
+    category: 'bus',
+    description: 'Flagship-class platform. Maximum instrument capacity.',
+    mass: 2000, power: 200, budget: 300,
+    envImpact: 80, crewRisk: 20, scienceValue: 0,
+    icon: '🔭',
+    envNote: 'Requires heavy-lift launcher. High fuel consumption and emissions.',
+    healthNote: 'Enhanced shielding but long mission increases exposure time.'
+  },
+  // PROPULSION
+  {
+    id: 'prop-chemical',
+    name: 'Chemical Propulsion',
+    category: 'propulsion',
+    description: 'Fast but fuel-hungry. High emissions, generates debris.',
+    mass: 200, power: 10, budget: 25,
+    envImpact: 85, crewRisk: 15, scienceValue: 0,
+    icon: '🔥',
+    envNote: 'Hydrazine propellant is toxic. High CO₂ equivalent emissions. Risk of debris generation on orbit insertion.',
+  },
+  {
+    id: 'prop-ion',
+    name: 'Ion/Electric Propulsion',
+    category: 'propulsion',
+    description: 'Fuel-efficient, low emissions. Slower but much cleaner. Used on Dawn mission.',
+    mass: 80, power: 300, budget: 40,
+    envImpact: 15, crewRisk: 5, scienceValue: 0,
+    icon: '⚡',
+    envNote: 'Uses xenon gas — 10x more efficient than chemical. Minimal debris. Low environmental impact.',
+  },
+  {
+    id: 'prop-solar-sail',
+    name: 'Solar Sail',
+    category: 'propulsion',
+    description: 'Zero propellant. Pushed by sunlight. Experimental but revolutionary.',
+    mass: 30, power: 0, budget: 60,
+    envImpact: 2, crewRisk: 25, scienceValue: 5,
+    icon: '☀️',
+    envNote: 'No propellant burned. Zero debris generation. Truly sustainable propulsion.',
+    healthNote: 'Longer travel time increases crew radiation exposure significantly.',
+  },
+  // POWER
+  {
+    id: 'power-solar-basic',
+    name: 'Basic Solar Panels',
+    category: 'power',
+    description: 'Standard silicon solar panels. Adequate for near-Sun missions.',
+    mass: 40, power: -300, budget: 10,
+    envImpact: 10, scienceValue: 0,
+    icon: '🌞',
+  },
+  {
+    id: 'power-solar-advanced',
+    name: 'Advanced Solar Array',
+    category: 'power',
+    description: 'High-efficiency multi-junction panels. Used on MAVEN and MRO.',
+    mass: 60, power: -600, budget: 25,
+    envImpact: 15, scienceValue: 0,
+    icon: '⚡',
+  },
+  {
+    id: 'power-rtg',
+    name: 'RTG (Nuclear Power)',
+    category: 'power',
+    description: 'Radioisotope Thermoelectric Generator. Used on Perseverance. Works anywhere.',
+    mass: 45, power: -400, budget: 80,
+    envImpact: 30, crewRisk: 10, scienceValue: 0,
+    icon: '☢️',
+    envNote: 'Uses Pu-238. Limited supply — strategic NASA resource. No solar dependency.',
+    healthNote: 'Radiation source — requires careful shielding placement.',
+  },
+  // COMMUNICATIONS
+  {
+    id: 'comms-medium',
+    name: 'Medium Gain Antenna',
+    category: 'comms',
+    description: 'Standard antenna. 50 Mbps downlink. Sufficient for basic science.',
+    mass: 20, power: 10, budget: 8,
+    dataRate: 50, envImpact: 5, scienceValue: 0,
+    icon: '📡',
+  },
+  {
+    id: 'comms-high',
+    name: 'High Gain Antenna',
+    category: 'comms',
+    description: '200 Mbps downlink. Required for high-data instruments like SAR or HiRes cameras.',
+    mass: 35, power: 25, budget: 20,
+    dataRate: 200, envImpact: 8, scienceValue: 0,
+    icon: '📶',
+  },
+  // INSTRUMENTS
+  {
+    id: 'inst-wide-cam',
+    name: 'Wide Angle Camera',
+    category: 'instrument',
+    description: 'Broad coverage, moderate resolution. Good for context mapping.',
+    mass: 5, power: 8, budget: 5,
+    scienceValue: 30, dataRate: 50,
+    icon: '📷',
+  },
+  {
+    id: 'inst-hires-cam',
+    name: 'HiRes Camera',
+    category: 'instrument',
+    description: 'Up to 5m/pixel. Required to meet Mars mapping objective. Based on HiRISE on MRO.',
+    mass: 65, power: 25, budget: 20,
+    scienceValue: 60, dataRate: 150,
+    icon: '🔬',
+  },
+  {
+    id: 'inst-spectrometer',
+    name: 'Spectrometer',
+    category: 'instrument',
+    description: 'Mineral composition analysis. Identifies water ice and geological features.',
+    mass: 8, power: 15, budget: 18,
+    scienceValue: 50, dataRate: 20,
+    icon: '🌈',
+  },
+  {
+    id: 'inst-radar',
+    name: 'Subsurface Radar',
+    category: 'instrument',
+    description: 'Penetrates surface to find underground water/ice. High power demand. Based on SHARAD.',
+    mass: 80, power: 300, budget: 150,
+    scienceValue: 90, dataRate: 80,
+    icon: '📻',
+  },
+  // CREW HEALTH
+  {
+    id: 'health-basic',
+    name: 'Basic Radiation Shielding',
+    category: 'health',
+    description: 'Aluminum shielding panels. Reduces radiation dose by ~20%.',
+    mass: 50, power: 0, budget: 5,
+    crewRisk: -20, envImpact: 5,
+    icon: '🛡️',
+    healthNote: 'Reduces annual crew radiation dose from ~600 mSv to ~480 mSv.',
+  },
+  {
+    id: 'health-advanced',
+    name: 'Advanced Bio-Shielding',
+    category: 'health',
+    description: 'Polyethylene + water shielding. Cuts radiation by ~50%. Used in deep space concepts.',
+    mass: 120, power: 5, budget: 25,
+    crewRisk: -50, envImpact: 10,
+    icon: '🔰',
+    healthNote: 'Reduces dose to ~300 mSv/year. Near NASA occupational limit of 500 mSv/year.',
+  },
+  {
+    id: 'health-exercise',
+    name: 'Exercise & Countermeasures',
+    category: 'health',
+    description: 'Resistance exercise equipment + medication protocols for microgravity effects.',
+    mass: 30, power: 10, budget: 8,
+    crewRisk: -25,
+    icon: '💪',
+    healthNote: 'Reduces bone/muscle loss. Required for missions >6 months per NASA HHP guidelines.',
+  },
+];
