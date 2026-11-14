@@ -2,6 +2,17 @@
 import { useMissionStore } from '../store/missionStore';
 import { useRouter } from 'next/navigation';
 
+// Pre-computed star positions (avoids Math.random during prerender)
+const STARS = Array.from({ length: 80 }, (_, i) => {
+  const seed = (i * 2654435761) >>> 0;
+  return {
+    width: ((seed % 20) / 10 + 1).toFixed(1),
+    height: (((seed >> 4) % 20) / 10 + 1).toFixed(1),
+    top: ((seed >> 8) % 100).toFixed(1),
+    left: ((seed >> 16) % 100).toFixed(1),
+  };
+});
+
 export default function Home() {
   const { players, setPlayers, setPhase } = useMissionStore();
   const router = useRouter();
@@ -10,13 +21,13 @@ export default function Home() {
     <main className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center relative overflow-hidden">
       {/* Stars background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(80)].map((_, i) => (
+        {STARS.map((star, i) => (
           <div key={i} className="absolute rounded-full bg-white opacity-70"
             style={{
-              width: Math.random() * 2 + 1 + 'px',
-              height: Math.random() * 2 + 1 + 'px',
-              top: Math.random() * 100 + '%',
-              left: Math.random() * 100 + '%',
+              width: star.width + 'px',
+              height: star.height + 'px',
+              top: star.top + '%',
+              left: star.left + '%',
             }}
           />
         ))}
