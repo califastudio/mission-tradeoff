@@ -1,7 +1,7 @@
 import { SpacecraftComponent } from '../types/mission';
 
 export const MARS_MISSION_LIMITS = {
-  massLimit: 1200,    // kg
+  massLimit: 1500,    // kg
   powerLimit: 1000,   // watts
   budgetLimit: 350,   // M USD
   missionLife: 3,     // years
@@ -35,7 +35,7 @@ export const ALL_COMPONENTS: SpacecraftComponent[] = [
     name: 'Large Observatory',
     category: 'bus',
     description: 'Flagship-class platform. Maximum instrument capacity.',
-    mass: 2000, power: 200, budget: 300,
+    mass: 1200, power: 200, budget: 250,
     envImpact: 80, crewRisk: 20, scienceValue: 0,
     icon: '🔭',
     envNote: 'Requires heavy-lift launcher. High fuel consumption and emissions.',
