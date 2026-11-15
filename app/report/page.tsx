@@ -33,7 +33,9 @@ export default function ReportPage() {
   const router = useRouter();
 
   const simMod = simulationResults?.scoreModifier ?? 0;
+  // Clamp final score to 0-100; compute the *effective* change for display
   const finalScore = Math.max(0, Math.min(100, scoreBreakdown.total + simMod));
+  const effectiveSimMod = finalScore - scoreBreakdown.total; // real delta after clamping
   const { grade, color, desc } = getGrade(finalScore);
 
   const recommendations: string[] = [];
@@ -72,9 +74,9 @@ export default function ReportPage() {
         <div className="text-center mb-10">
           <div className={`text-8xl font-black mb-2 ${color}`}>{grade}</div>
           <div className="text-3xl font-black text-white mb-1">{finalScore} / 100</div>
-          {simMod !== 0 && (
-            <div className={`text-xs mt-1 ${simMod > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-              Base: {scoreBreakdown.total} · Simulation: {simMod >= 0 ? '+' : ''}{simMod}
+          {effectiveSimMod !== 0 && (
+            <div className={`text-xs mt-1 ${effectiveSimMod > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              Design: {scoreBreakdown.total} · Simulation: {effectiveSimMod > 0 ? '+' : ''}{effectiveSimMod}
             </div>
           )}
           <div className="text-slate-400">{desc}</div>
@@ -89,6 +91,18 @@ export default function ReportPage() {
             <ScoreBar label="🎯 Mission Objectives (15%)" value={scoreBreakdown.objectives} color="text-blue-400" />
             <ScoreBar label="🌱 Environmental Score (15%)" value={scoreBreakdown.environment} color="text-emerald-400" />
             <ScoreBar label="💚 Crew Health Score (15%)" value={scoreBreakdown.health} color="text-pink-400" />
+            {effectiveSimMod !== 0 && (
+              <div className={`mt-4 pt-4 border-t border-slate-700 flex items-center justify-between text-sm`}>
+                <span className="text-slate-300">🌌 Simulation Performance</span>
+                <span className={`font-bold ${effectiveSimMod > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {effectiveSimMod > 0 ? '+' : ''}{effectiveSimMod} pts
+                </span>
+              </div>
+            )}
+            <div className="mt-4 pt-4 border-t border-slate-700 flex items-center justify-between text-sm font-bold">
+              <span className="text-white">Total</span>
+              <span className="text-cyan-400">{finalScore} / 100</span>
+            </div>
           </div>
 
           {/* Recommendations */}
@@ -188,10 +202,13 @@ export default function ReportPage() {
               </span>
               <span
                 className={`text-sm font-bold ${
-                  simMod >= 0 ? 'text-emerald-400' : 'text-red-400'
+                  effectiveSimMod >= 0 ? 'text-emerald-400' : 'text-red-400'
                 }`}
               >
-                Total simulation adjustment: {simMod >= 0 ? '+' : ''}{simMod} pts
+                Score adjustment: {effectiveSimMod >= 0 ? '+' : ''}{effectiveSimMod} pts
+                {effectiveSimMod !== simMod && (
+                  <span className="text-slate-500 font-normal text-xs ml-1">(capped at 100)</span>
+                )}
               </span>
             </div>
           </div>

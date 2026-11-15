@@ -65,12 +65,18 @@ function calculateScore(
   const environment = Math.max(0, 100 - resources.envImpact);
   const health = Math.max(0, 100 - resources.crewRisk);
 
-  const total = Math.round(
-    science * 0.35 +
-      efficiency * 0.2 +
-      objectives * 0.15 +
-      environment * 0.15 +
-      health * 0.15
+  const total = Math.min(
+    100,
+    Math.max(
+      0,
+      Math.round(
+        science * 0.35 +
+          efficiency * 0.2 +
+          objectives * 0.15 +
+          environment * 0.15 +
+          health * 0.15
+      )
+    )
   );
 
   return {
