@@ -1,6 +1,6 @@
 # 🚀 Mission Trade-Off
 
-**NASA Space Apps Challenge 2026** | Team: Califa Studio 🇦🇷
+**NASA Space Apps Challenge 2026** | Team: Ready for Liftoff 🇦🇷
 
 > *"Every decision shapes the mission. Build smart. Launch far."*
 
@@ -135,10 +135,10 @@ mission-tradeoff/
 
 ## 👨‍👩‍👦 Team
 
-**Califa Studio** — Buenos Aires, Argentina 🇦🇷
+**Ready for Liftoff** — Buenos Aires, Argentina 🇦🇷
 
 - **Berno** — Lead developer & designer
-- **Mom** — Co-designer & mission strategist
+- **Sabito** — Co-designer & mission strategist
 
 *First-time NASA Space Apps participants. Building for the next generation of space mission designers.*
 
