@@ -182,10 +182,10 @@ export default function GamePage() {
 
             {selectedComponents.length > 0 && (
               <button
-                onClick={() => router.push('/report')}
+                onClick={() => router.push('/simulation')}
                 className="w-full bg-cyan-500 hover:bg-cyan-400 text-black font-black text-lg py-4 rounded-2xl transition-all transform hover:scale-[1.02] shadow-lg shadow-cyan-500/30"
               >
-                🚀 SIMULATE MISSION
+                🚀 SIMULATE MISSION →
               </button>
             )}
 

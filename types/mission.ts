@@ -30,6 +30,53 @@ export interface SpacecraftComponent {
   icon: string;
 }
 
+export interface ScoreBreakdown {
+  science: number;
+  efficiency: number;
+  objectives: number;
+  environment: number;
+  health: number;
+  total: number;
+}
+
+export type EventType = 'engineering' | 'hazard' | 'health';
+
+export interface EventOption {
+  id: string;
+  label: string;
+  outcome: string;
+  nasaAction?: string;
+  scoreEffect: number;
+  stressEffect: number;
+  isOptimal?: boolean;
+}
+
+export interface SimulationEvent {
+  id: string;
+  type: EventType;
+  title: string;
+  description: string;
+  icon: string;
+  context?: string;
+  options: EventOption[];
+  nasaFact?: string;
+}
+
+export interface EventResult {
+  eventTitle: string;
+  eventType: EventType;
+  choiceLabel: string;
+  outcome: string;
+  scoreEffect: number;
+  isOptimal: boolean;
+}
+
+export interface SimulationResultData {
+  scoreModifier: number;
+  crewStressFinal: number;
+  eventResults: EventResult[];
+}
+
 export interface MissionState {
   phase: number;
   players: number;
@@ -38,13 +85,5 @@ export interface MissionState {
   resources: Resource;
   missionScore: number;
   scoreBreakdown: ScoreBreakdown;
-}
-
-export interface ScoreBreakdown {
-  science: number;
-  efficiency: number;
-  objectives: number;
-  environment: number;
-  health: number;
-  total: number;
+  simulationResults: SimulationResultData | null;
 }

@@ -190,4 +190,14 @@ export const ALL_COMPONENTS: SpacecraftComponent[] = [
     icon: '💪',
     healthNote: 'Reduces bone/muscle loss. Required for missions >6 months per NASA HHP guidelines.',
   },
+  {
+    id: 'health-ssa',
+    name: 'Debris Tracking Sensor (SSA)',
+    category: 'health',
+    description: 'Space Situational Awareness sensor. Provides 48 h advance warning of debris conjunctions vs. 6 h without.',
+    mass: 2, power: 5, budget: 3,
+    envImpact: 2, crewRisk: -5, scienceValue: 0,
+    icon: '🛡️',
+    healthNote: 'Enables proactive Collision Avoidance Maneuvers. Reduces debris risk during Conjunction Warning events. Based on real NASA SSA systems.',
+  },
 ];

@@ -29,10 +29,12 @@ function ScoreBar({ label, value, color }: { label: string; value: number; color
 }
 
 export default function ReportPage() {
-  const { scoreBreakdown, resources, selectedComponents, reset } = useMissionStore();
+  const { scoreBreakdown, resources, selectedComponents, simulationResults, reset } = useMissionStore();
   const router = useRouter();
 
-  const { grade, color, desc } = getGrade(scoreBreakdown.total);
+  const simMod = simulationResults?.scoreModifier ?? 0;
+  const finalScore = Math.max(0, Math.min(100, scoreBreakdown.total + simMod));
+  const { grade, color, desc } = getGrade(finalScore);
 
   const recommendations: string[] = [];
   if (resources.envImpact > 60) recommendations.push('🌱 Consider ion propulsion or solar sail to significantly reduce emissions and debris generation.');
@@ -69,7 +71,12 @@ export default function ReportPage() {
         {/* Score Hero */}
         <div className="text-center mb-10">
           <div className={`text-8xl font-black mb-2 ${color}`}>{grade}</div>
-          <div className="text-3xl font-black text-white mb-1">{scoreBreakdown.total} / 100</div>
+          <div className="text-3xl font-black text-white mb-1">{finalScore} / 100</div>
+          {simMod !== 0 && (
+            <div className={`text-xs mt-1 ${simMod > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              Base: {scoreBreakdown.total} · Simulation: {simMod >= 0 ? '+' : ''}{simMod}
+            </div>
+          )}
           <div className="text-slate-400">{desc}</div>
         </div>
 
@@ -115,6 +122,80 @@ export default function ReportPage() {
             ))}
           </div>
         </div>
+
+        {/* Simulation Events */}
+        {simulationResults && simulationResults.eventResults.length > 0 && (
+          <div className="bg-slate-800/40 border border-slate-700 rounded-2xl p-6 mb-8">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-5">
+              🚀 Simulation Events ({simulationResults.eventResults.length})
+            </h2>
+            <div className="space-y-3">
+              {simulationResults.eventResults.map((result, i) => (
+                <div
+                  key={i}
+                  className={`rounded-xl p-4 border ${
+                    result.eventType === 'hazard'
+                      ? 'border-red-500/30 bg-red-950/20'
+                      : result.eventType === 'health'
+                      ? 'border-pink-500/30 bg-pink-950/10'
+                      : 'border-slate-600 bg-slate-900/40'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {result.eventType === 'hazard' && (
+                        <span className="text-xs text-red-400 font-bold">🚨 HAZARD</span>
+                      )}
+                      {result.eventType === 'health' && (
+                        <span className="text-xs text-pink-400 font-bold">💚 HEALTH</span>
+                      )}
+                      {result.eventType === 'engineering' && (
+                        <span className="text-xs text-cyan-400 font-bold">⚙️ ENGINEERING</span>
+                      )}
+                      <span className="text-sm font-bold text-white">{result.eventTitle}</span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {result.isOptimal && (
+                        <span className="text-xs text-emerald-400">⭐ Optimal</span>
+                      )}
+                      <span
+                        className={`text-xs font-mono font-bold ${
+                          result.scoreEffect >= 0 ? 'text-emerald-400' : 'text-red-400'
+                        }`}
+                      >
+                        {result.scoreEffect >= 0 ? '+' : ''}{result.scoreEffect}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-400">Choice: {result.choiceLabel}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 pt-4 border-t border-slate-700 flex items-center justify-between flex-wrap gap-2">
+              <span className="text-xs text-slate-400">
+                🧠 Final crew stress:{' '}
+                <span
+                  className={`font-bold ${
+                    simulationResults.crewStressFinal < 40
+                      ? 'text-emerald-400'
+                      : simulationResults.crewStressFinal < 70
+                      ? 'text-amber-400'
+                      : 'text-red-400'
+                  }`}
+                >
+                  {simulationResults.crewStressFinal}%
+                </span>
+              </span>
+              <span
+                className={`text-sm font-bold ${
+                  simMod >= 0 ? 'text-emerald-400' : 'text-red-400'
+                }`}
+              >
+                Total simulation adjustment: {simMod >= 0 ? '+' : ''}{simMod} pts
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Components Used */}
         <div className="bg-slate-800/40 border border-slate-700 rounded-2xl p-6 mb-10">
