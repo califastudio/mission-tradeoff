@@ -180,13 +180,11 @@ export default function ReportPage() {
                 >
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      {result.eventType === 'hazard' && (
-                        <span className="text-xs font-bold">
-                          {result.hazardAvoided
-                            ? <span className="text-emerald-400">🛡️ HAZARD AVOIDED</span>
-                            : <span className="text-red-400">🚨 HAZARD</span>
-                          }
-                        </span>
+                      {result.eventType === 'hazard' && result.hazardAvoided && (
+                        <span className="text-xs text-emerald-400 font-bold">🛡️ HAZARD AVOIDED</span>
+                      )}
+                      {result.eventType === 'hazard' && !result.hazardAvoided && (
+                        <span className="text-xs text-red-400 font-bold">🚨 HAZARD</span>
                       )}
                       {result.eventType === 'health' && (
                         <span className="text-xs text-pink-400 font-bold">💚 HEALTH</span>

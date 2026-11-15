@@ -19,6 +19,8 @@ const STARS = Array.from({ length: 60 }, (_, i) => {
 
 type SimPhase = 'launching' | 'in-flight' | 'event' | 'resolved' | 'complete';
 
+const HAZARD_BONUS = 5; // bonus pts por esquivar hazard con decisión óptima
+
 export default function SimulationPage() {
   const { selectedComponents, setSimulationResults } = useMissionStore();
   const router = useRouter();
@@ -51,8 +53,6 @@ export default function SimulationPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const HAZARD_BONUS = 5; // bonus fijo por esquivar un hazard correctamente
 
   const handleChoice = (option: EventOption) => {
     setSelectedChoice(option);
