@@ -34,7 +34,7 @@ export const ALL_COMPONENTS: SpacecraftComponent[] = [
     id: 'bus-large',
     name: 'Large Observatory',
     category: 'bus',
-    description: 'Flagship-class platform. Maximum instrument capacity.',
+    description: 'Flagship-class platform. Maximum instrument capacity. Up to 300kg payload margin.',
     mass: 1200, power: 200, budget: 250,
     envImpact: 80, crewRisk: 20, scienceValue: 0,
     icon: '🔭',
