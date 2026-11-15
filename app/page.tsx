@@ -55,18 +55,56 @@ export default function Home() {
         </p>
 
         {/* 3 Axes */}
-        <div className="grid grid-cols-3 gap-4 mb-10">
-          {[
-            { icon: '⚙️', label: 'Engineering', desc: 'Mass · Power · Budget · Data' },
-            { icon: '🌱', label: 'Environment', desc: 'Emissions · Debris · Resources' },
-            { icon: '💚', label: 'Crew Health', desc: 'Radiation · Microgravity · Isolation' },
-          ].map((axis) => (
-            <div key={axis.label} className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
-              <div className="text-2xl mb-1">{axis.icon}</div>
-              <div className="text-sm font-bold text-white mb-1">{axis.label}</div>
-              <div className="text-xs text-slate-400">{axis.desc}</div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-slate-800/60 border border-cyan-500/30 rounded-2xl p-5 text-left">
+            <div className="text-3xl mb-2">⚙️</div>
+            <div className="text-sm font-black text-white mb-1 uppercase tracking-wide">Engineering</div>
+            <div className="text-xs text-slate-400 mb-3 leading-relaxed">
+              Every component you add costs <span className="text-white">mass</span>, <span className="text-white">power</span>, and <span className="text-white">budget</span>. Add too much and your rocket can't lift off. Add too little and your mission fails scientifically.
             </div>
-          ))}
+            <div className="space-y-1">
+              <div className="text-xs text-cyan-400">⚖️ Mass limit: 1,200 kg</div>
+              <div className="text-xs text-cyan-400">⚡ Power limit: 1,000 W</div>
+              <div className="text-xs text-cyan-400">💰 Budget: $350M USD</div>
+            </div>
+          </div>
+
+          <div className="bg-slate-800/60 border border-emerald-500/30 rounded-2xl p-5 text-left">
+            <div className="text-3xl mb-2">🌱</div>
+            <div className="text-sm font-black text-white mb-1 uppercase tracking-wide">Environment</div>
+            <div className="text-xs text-slate-400 mb-3 leading-relaxed">
+              Space isn't empty — it's shared. Each launch creates <span className="text-white">debris</span>. Each propulsion choice has an <span className="text-white">emissions footprint</span>. Responsible design means planning the mission's end, not just its beginning.
+            </div>
+            <div className="space-y-1">
+              <div className="text-xs text-emerald-400">🛰️ 27,000+ debris objects tracked today</div>
+              <div className="text-xs text-emerald-400">♻️ Deorbit planning = lower impact score</div>
+              <div className="text-xs text-emerald-400">☀️ Solar/ion propulsion = cleaner missions</div>
+            </div>
+          </div>
+
+          <div className="bg-slate-800/60 border border-pink-500/30 rounded-2xl p-5 text-left">
+            <div className="text-3xl mb-2">💚</div>
+            <div className="text-sm font-black text-white mb-1 uppercase tracking-wide">Crew Health</div>
+            <div className="text-xs text-slate-400 mb-3 leading-relaxed">
+              Deep space is hostile to the human body. <span className="text-white">Radiation</span> accumulates silently. <span className="text-white">Microgravity</span> degrades bones. <span className="text-white">Isolation</span> affects the mind. Your design choices protect — or endanger — the people aboard.
+            </div>
+            <div className="space-y-1">
+              <div className="text-xs text-pink-400">☢️ NASA limit: 500 mSv/year deep space</div>
+              <div className="text-xs text-pink-400">🏋️ Exercise countermeasures: mandatory &gt;6 months</div>
+              <div className="text-xs text-pink-400">🧠 Behavioral health: #1 risk for Mars missions</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Space Hazards teaser */}
+        <div className="bg-red-950/30 border border-red-500/25 rounded-2xl p-4 mb-10 text-left flex gap-4 items-start">
+          <div className="text-2xl flex-shrink-0">🛸</div>
+          <div>
+            <div className="text-xs font-black text-red-400 uppercase tracking-widest mb-1">Also: Space is not safe</div>
+            <div className="text-xs text-slate-400 leading-relaxed">
+              During your mission, real hazards will strike — <span className="text-red-300">debris conjunctions</span>, <span className="text-red-300">asteroid close approaches</span>, solar flares, and equipment failures. How you respond will determine your final score. Every hazard you avoid with the right decision earns bonus points.
+            </div>
+          </div>
         </div>
 
         {/* Players */}
