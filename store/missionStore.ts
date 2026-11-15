@@ -113,7 +113,7 @@ const INITIAL_STATE: MissionState = {
     health: 50,
     total: 0,
   },
-  simulationResults: null,
+  simulationResults: null as SimulationResultData | null,
 };
 
 export const useMissionStore = create<MissionStore>((set) => ({

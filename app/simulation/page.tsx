@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useMissionStore } from '../../store/missionStore';
 import { useRouter } from 'next/navigation';
 import { pickSimulationEvents } from '../../data/simulationEvents';
-import { SimulationEvent, EventOption, EventResult } from '../../types/mission';
+import { SimulationEvent, EventOption, EventResult, HazardBonus } from '../../types/mission';
 
 // Deterministic starfield (SSR-safe)
 const STARS = Array.from({ length: 60 }, (_, i) => {
@@ -31,6 +31,8 @@ export default function SimulationPage() {
   const [totalScoreEffect, setTotalScoreEffect] = useState(0);
   const [missionDay, setMissionDay] = useState(0);
   const [eventResults, setEventResults] = useState<EventResult[]>([]);
+  const [hazardBonuses, setHazardBonuses] = useState<HazardBonus[]>([]);
+  const [showHazardBonus, setShowHazardBonus] = useState(false);
 
   useEffect(() => {
     if (selectedComponents.length === 0) {
@@ -50,17 +52,37 @@ export default function SimulationPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const HAZARD_BONUS = 5; // bonus fijo por esquivar un hazard correctamente
+
   const handleChoice = (option: EventOption) => {
     setSelectedChoice(option);
     setSimPhase('resolved');
     setCrewStress((prev) => Math.max(0, Math.min(100, prev + option.stressEffect)));
-    setTotalScoreEffect((prev) => prev + option.scoreEffect);
+
+    const isHazardAvoid = events[currentIdx]?.type === 'hazard' && option.isOptimal;
+    const bonusPoints = isHazardAvoid ? HAZARD_BONUS : 0;
+
+    setTotalScoreEffect((prev) => prev + option.scoreEffect + bonusPoints);
+
+    if (isHazardAvoid) {
+      setShowHazardBonus(true);
+      setTimeout(() => setShowHazardBonus(false), 2500);
+      setHazardBonuses((prev) => [
+        ...prev,
+        {
+          eventTitle: events[currentIdx].title,
+          bonus: bonusPoints,
+          icon: events[currentIdx].icon,
+        },
+      ]);
+    }
   };
 
   const handleNext = () => {
     if (!selectedChoice) return;
     const currentEvent = events[currentIdx];
 
+    const isHazardAvoid = currentEvent.type === 'hazard' && (selectedChoice.isOptimal ?? false);
     const result: EventResult = {
       eventTitle: currentEvent.title,
       eventType: currentEvent.type,
@@ -68,6 +90,7 @@ export default function SimulationPage() {
       outcome: selectedChoice.outcome,
       scoreEffect: selectedChoice.scoreEffect,
       isOptimal: selectedChoice.isOptimal ?? false,
+      hazardAvoided: isHazardAvoid,
     };
     const newResults = [...eventResults, result];
     setEventResults(newResults);
@@ -75,8 +98,13 @@ export default function SimulationPage() {
     if (currentIdx + 1 >= events.length) {
       const finalMod = totalScoreEffect;
       const finalStress = crewStress;
+      // Build final bonuses synchronously (don't rely on async setState)
+      const finalBonuses = isHazardAvoid
+        ? [...hazardBonuses, { eventTitle: currentEvent.title, bonus: HAZARD_BONUS, icon: currentEvent.icon }]
+        : [...hazardBonuses];
       setSimulationResults({
         scoreModifier: finalMod,
+        hazardBonuses: finalBonuses,
         crewStressFinal: finalStress,
         eventResults: newResults,
       });
@@ -225,6 +253,15 @@ export default function SimulationPage() {
       </header>
 
       {/* Main */}
+      {/* Hazard Avoided Toast */}
+      {showHazardBonus && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-bounce">
+          <div className="bg-emerald-500 text-black font-black text-sm px-5 py-2 rounded-full shadow-xl shadow-emerald-500/40 flex items-center gap-2">
+            🛡️ HAZARD AVOIDED — +{HAZARD_BONUS} BONUS PTS
+          </div>
+        </div>
+      )}
+
       <main className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden">
         {/* Starfield */}
         <div className="absolute inset-0 pointer-events-none">
@@ -332,7 +369,7 @@ export default function SimulationPage() {
                 <p className="text-sm text-white font-medium mb-2">
                   {selectedChoice.label}
                 </p>
-                <div className="flex gap-4 text-xs">
+                <div className="flex gap-4 text-xs flex-wrap">
                   <span
                     className={
                       selectedChoice.scoreEffect >= 0
@@ -344,6 +381,11 @@ export default function SimulationPage() {
                     {selectedChoice.scoreEffect >= 0 ? '+' : ''}
                     {selectedChoice.scoreEffect}
                   </span>
+                  {events[currentIdx]?.type === 'hazard' && selectedChoice.isOptimal && (
+                    <span className="text-emerald-300 font-bold">
+                      🛡️ Hazard avoided +{HAZARD_BONUS}
+                    </span>
+                  )}
                   <span
                     className={
                       selectedChoice.stressEffect <= 0

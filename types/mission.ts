@@ -69,10 +69,18 @@ export interface EventResult {
   outcome: string;
   scoreEffect: number;
   isOptimal: boolean;
+  hazardAvoided?: boolean; // true si era hazard Y fue la decisión óptima
+}
+
+export interface HazardBonus {
+  eventTitle: string;
+  bonus: number;
+  icon: string;
 }
 
 export interface SimulationResultData {
-  scoreModifier: number;
+  scoreModifier: number;      // suma de scoreEffects (puede ser grande, se clampea al aplicar)
+  hazardBonuses: HazardBonus[]; // lista de hazards esquivados correctamente
   crewStressFinal: number;
   eventResults: EventResult[];
 }

@@ -33,6 +33,8 @@ export default function ReportPage() {
   const router = useRouter();
 
   const simMod = simulationResults?.scoreModifier ?? 0;
+  const hazardBonuses = simulationResults?.hazardBonuses ?? [];
+  const totalHazardBonus = hazardBonuses.reduce((sum, h) => sum + h.bonus, 0);
   // Clamp final score to 0-100; compute the *effective* change for display
   const finalScore = Math.max(0, Math.min(100, scoreBreakdown.total + simMod));
   const effectiveSimMod = finalScore - scoreBreakdown.total; // real delta after clamping
@@ -137,6 +139,27 @@ export default function ReportPage() {
           </div>
         </div>
 
+        {/* Hazard Bonuses */}
+        {hazardBonuses.length > 0 && (
+          <div className="bg-emerald-950/40 border border-emerald-500/40 rounded-2xl p-6 mb-8">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-emerald-400 mb-4">
+              🛡️ Hazards Avoided — Bonus Points
+            </h2>
+            <div className="space-y-2 mb-4">
+              {hazardBonuses.map((h, i) => (
+                <div key={i} className="flex items-center justify-between bg-emerald-900/30 border border-emerald-500/20 rounded-xl px-4 py-3">
+                  <span className="text-sm text-emerald-100">{h.icon} {h.eventTitle}</span>
+                  <span className="text-emerald-400 font-black text-sm">+{h.bonus} pts</span>
+                </div>
+              ))}
+            </div>
+            <div className="pt-3 border-t border-emerald-500/20 flex justify-between items-center">
+              <span className="text-xs text-emerald-400/70">Mission survived {hazardBonuses.length} space hazard{hazardBonuses.length > 1 ? 's' : ''} with optimal response</span>
+              <span className="text-emerald-400 font-black">Total: +{totalHazardBonus} pts</span>
+            </div>
+          </div>
+        )}
+
         {/* Simulation Events */}
         {simulationResults && simulationResults.eventResults.length > 0 && (
           <div className="bg-slate-800/40 border border-slate-700 rounded-2xl p-6 mb-8">
@@ -158,7 +181,12 @@ export default function ReportPage() {
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       {result.eventType === 'hazard' && (
-                        <span className="text-xs text-red-400 font-bold">🚨 HAZARD</span>
+                        <span className="text-xs font-bold">
+                          {result.hazardAvoided
+                            ? <span className="text-emerald-400">🛡️ HAZARD AVOIDED</span>
+                            : <span className="text-red-400">🚨 HAZARD</span>
+                          }
+                        </span>
                       )}
                       {result.eventType === 'health' && (
                         <span className="text-xs text-pink-400 font-bold">💚 HEALTH</span>
