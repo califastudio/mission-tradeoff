@@ -4,10 +4,6 @@
 
 > *"Every decision shapes the mission. Build smart. Launch far."*
 
-[![NASA Space Apps](https://img.shields.io/badge/NASA-Space%20Apps%202026-blue?logo=nasa)](https://www.spaceappschallenge.org)
-[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://typescriptlang.org)
-
 ## 🌍 The Problem
 
 Designing a space mission means making hundreds of competing decisions across engineering, environment, and human health. For students and aspiring engineers, these trade-offs remain abstract — there's no accessible way to experience a full mission from concept to operation.
