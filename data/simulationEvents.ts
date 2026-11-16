@@ -41,7 +41,7 @@ export const SIMULATION_EVENTS: SimulationEvent[] = [
       },
     ],
     nasaFact:
-      'As of 2026, there are 27,000+ tracked objects in Earth orbit and millions of untracked fragments. The ISS performs 2–3 Collision Avoidance Maneuvers per year. The 1/10,000 Pc threshold is now international standard (NASA/DoD 2007).',
+      'As of 2026, there are 35,000+ tracked objects in Earth orbit and millions of untracked fragments. The ISS performs 2–3 Collision Avoidance Maneuvers per year. The 1/10,000 Pc threshold is now international standard (NASA/DoD 2007).',
   },
   {
     id: 'micrometeorite',

@@ -84,7 +84,7 @@ export default function Home() {
               Space isn't empty — it's shared. Each launch creates <span className="text-white">debris</span>. Each propulsion choice has an <span className="text-white">emissions footprint</span>. Responsible design means planning the mission's end, not just its beginning.
             </div>
             <div className="space-y-1">
-              <div className="text-xs text-emerald-400">🛰️ 27,000+ debris objects tracked today</div>
+              <div className="text-xs text-emerald-400">🛰️ 35,000+ debris objects tracked today (2026)</div>
               <div className="text-xs text-emerald-400">♻️ Deorbit planning = lower impact score</div>
               <div className="text-xs text-emerald-400">☀️ Solar/ion propulsion = cleaner missions</div>
             </div>
