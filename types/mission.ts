@@ -85,9 +85,17 @@ export interface SimulationResultData {
   eventResults: EventResult[];
 }
 
+export interface Player {
+  id: number;
+  name: string;
+  score: number;
+  ready: boolean;
+}
+
 export interface MissionState {
   phase: number;
   players: number;
+  playerList: Player[];
   scenario: string;
   selectedComponents: SpacecraftComponent[];
   resources: Resource;

@@ -5,6 +5,7 @@ import {
   Resource,
   ScoreBreakdown,
   SimulationResultData,
+  Player,
 } from '../types/mission';
 import { MARS_MISSION_LIMITS } from '../data/components';
 
@@ -89,11 +90,24 @@ function calculateScore(
   };
 }
 
+function buildPlayerList(count: number): Player[] {
+  const names = ['Commander', 'Engineer', 'Scientist', 'Navigator'];
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    name: names[i],
+    score: 0,
+    ready: false,
+  }));
+}
+
 interface MissionStore extends MissionState {
   addComponent: (component: SpacecraftComponent) => void;
   removeComponent: (id: string) => void;
   setPhase: (phase: number) => void;
   setPlayers: (players: number) => void;
+  setPlayerName: (id: number, name: string) => void;
+  setPlayerReady: (id: number, ready: boolean) => void;
+  addPlayerScore: (id: number, points: number) => void;
   setSimulationResults: (results: SimulationResultData) => void;
   reset: () => void;
 }
@@ -101,6 +115,7 @@ interface MissionStore extends MissionState {
 const INITIAL_STATE: MissionState = {
   phase: 0,
   players: 1,
+  playerList: buildPlayerList(1),
   scenario: 'mars-mapping',
   selectedComponents: [],
   resources: { ...BASE_RESOURCES },
@@ -152,7 +167,26 @@ export const useMissionStore = create<MissionStore>((set) => ({
     }),
 
   setPhase: (phase: number) => set(() => ({ phase })),
-  setPlayers: (players: number) => set(() => ({ players })),
+  setPlayers: (players: number) =>
+    set(() => ({ players, playerList: buildPlayerList(players) })),
+  setPlayerName: (id: number, name: string) =>
+    set((state) => ({
+      playerList: state.playerList.map((p) =>
+        p.id === id ? { ...p, name } : p
+      ),
+    })),
+  setPlayerReady: (id: number, ready: boolean) =>
+    set((state) => ({
+      playerList: state.playerList.map((p) =>
+        p.id === id ? { ...p, ready } : p
+      ),
+    })),
+  addPlayerScore: (id: number, points: number) =>
+    set((state) => ({
+      playerList: state.playerList.map((p) =>
+        p.id === id ? { ...p, score: p.score + points } : p
+      ),
+    })),
   setSimulationResults: (results: SimulationResultData) =>
     set(() => ({ simulationResults: results })),
   reset: () => set(() => ({ ...INITIAL_STATE })),

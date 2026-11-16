@@ -29,7 +29,7 @@ function ScoreBar({ label, value, color }: { label: string; value: number; color
 }
 
 export default function ReportPage() {
-  const { scoreBreakdown, resources, selectedComponents, simulationResults, reset } = useMissionStore();
+  const { scoreBreakdown, resources, selectedComponents, simulationResults, playerList, reset } = useMissionStore();
   const router = useRouter();
 
   const simMod = simulationResults?.scoreModifier ?? 0;
@@ -72,6 +72,46 @@ export default function ReportPage() {
       </header>
 
       <div className="max-w-4xl mx-auto px-6 py-10">
+
+        {/* Leaderboard — solo si hay más de 1 jugador */}
+        {playerList.length > 1 && (
+          <div className="bg-slate-800/60 border border-cyan-500/30 rounded-2xl p-6 mb-8">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-cyan-400 mb-5">
+              🏆 Crew Leaderboard
+            </h2>
+            <div className="space-y-3">
+              {[...playerList]
+                .sort((a, b) => b.score - a.score)
+                .map((player, i) => {
+                  const colors = ['text-amber-400','text-slate-300','text-amber-600','text-slate-400'];
+                  const medals = ['🥇','🥈','🥉','4️⃣'];
+                  const barColors = ['bg-amber-400','bg-slate-400','bg-amber-600','bg-slate-500'];
+                  const maxScore = Math.max(...playerList.map(p => p.score), 1);
+                  return (
+                    <div key={player.id} className="flex items-center gap-4">
+                      <span className="text-xl w-8 text-center">{medals[i]}</span>
+                      <div className="flex-1">
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className={`font-bold ${colors[i]}`}>{player.name}</span>
+                          <span className={`font-mono font-bold ${colors[i]}`}>{player.score} pts</span>
+                        </div>
+                        <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${barColors[i]}`}
+                            style={{ width: `${(player.score / maxScore) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+            <p className="text-xs text-slate-500 mt-4 text-center">
+              Points earned by making optimal decisions during the mission simulation
+            </p>
+          </div>
+        )}
+
         {/* Score Hero */}
         <div className="text-center mb-10">
           <div className={`text-8xl font-black mb-2 ${color}`}>{grade}</div>

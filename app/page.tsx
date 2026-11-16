@@ -1,6 +1,7 @@
 'use client';
 import { useMissionStore } from '../store/missionStore';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 // Pre-computed star positions (avoids Math.random during prerender)
 const STARS = Array.from({ length: 80 }, (_, i) => {
@@ -14,8 +15,16 @@ const STARS = Array.from({ length: 80 }, (_, i) => {
 });
 
 export default function Home() {
-  const { players, setPlayers, setPhase } = useMissionStore();
+  const { players, setPlayers, setPhase, playerList, setPlayerName } = useMissionStore();
   const router = useRouter();
+  const [step, setStep] = useState<'config' | 'names'>('config');
+
+  const allNamed = playerList.every(p => p.name.trim().length > 0);
+
+  const handleStart = () => {
+    setPhase(1);
+    router.push('/game');
+  };
 
   return (
     <main className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center relative overflow-hidden">
@@ -107,33 +116,67 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Players */}
-        <div className="mb-6">
-          <p className="text-slate-400 text-sm mb-3">Select number of players:</p>
-          <div className="flex justify-center gap-3">
-            {[1, 2, 3, 4].map((n) => (
-              <button
-                key={n}
-                onClick={() => setPlayers(n)}
-                className={`w-12 h-12 rounded-xl font-bold text-lg transition-all ${
-                  players === n
-                    ? 'bg-cyan-500 text-black'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                }`}
-              >
-                {n}
-              </button>
-            ))}
+        {/* Players setup */}
+        {step === 'config' && (
+          <div className="mb-6">
+            <p className="text-slate-400 text-sm mb-3 font-semibold">👥 How many players?</p>
+            <div className="flex justify-center gap-3 mb-6">
+              {[1, 2, 3, 4].map((n) => (
+                <button
+                  key={n}
+                  onClick={() => setPlayers(n)}
+                  className={`w-14 h-14 rounded-2xl font-black text-xl transition-all ${
+                    players === n
+                      ? 'bg-cyan-500 text-black scale-110 shadow-lg shadow-cyan-500/30'
+                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setStep('names')}
+              className="w-full bg-cyan-500 hover:bg-cyan-400 text-black font-black text-lg py-4 rounded-2xl transition-all hover:scale-[1.02] shadow-lg shadow-cyan-500/30"
+            >
+              → Enter Player Names
+            </button>
           </div>
-        </div>
+        )}
 
-        {/* CTA */}
-        <button
-          onClick={() => { setPhase(1); router.push('/game'); }}
-          className="bg-cyan-500 hover:bg-cyan-400 text-black font-black text-xl px-12 py-4 rounded-2xl transition-all transform hover:scale-105 shadow-lg shadow-cyan-500/30"
-        >
-          🚀 START MISSION
-        </button>
+        {step === 'names' && (
+          <div className="mb-6">
+            <div className="flex items-center gap-3 mb-5">
+              <button onClick={() => setStep('config')} className="text-slate-400 hover:text-white text-sm">← Back</button>
+              <p className="text-slate-300 text-sm font-semibold">👤 Enter crew names</p>
+            </div>
+            <div className="space-y-3 mb-6">
+              {playerList.map((player, i) => (
+                <div key={player.id} className="flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0 ${
+                    ['bg-cyan-500','bg-purple-500','bg-emerald-500','bg-amber-500'][i]
+                  } text-black`}>
+                    {i + 1}
+                  </div>
+                  <input
+                    type="text"
+                    placeholder={`Player ${i + 1} name...`}
+                    value={player.name === ['Commander','Engineer','Scientist','Navigator'][i] ? '' : player.name}
+                    onChange={(e) => setPlayerName(player.id, e.target.value || ['Commander','Engineer','Scientist','Navigator'][i])}
+                    className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+                  />
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={handleStart}
+              disabled={!allNamed}
+              className="w-full bg-cyan-500 hover:bg-cyan-400 disabled:bg-slate-700 disabled:text-slate-500 text-black font-black text-xl py-4 rounded-2xl transition-all hover:scale-[1.02] shadow-lg shadow-cyan-500/30 disabled:scale-100 disabled:shadow-none"
+            >
+              🚀 LAUNCH MISSION
+            </button>
+          </div>
+        )}
 
         <p className="mt-8 text-slate-600 text-xs">
           Built by Califa Studio 🇦🇷 · NASA Space Apps 2026 · Space is humanity&apos;s common heritage

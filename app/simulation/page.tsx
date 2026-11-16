@@ -22,7 +22,7 @@ type SimPhase = 'launching' | 'in-flight' | 'event' | 'resolved' | 'complete';
 const HAZARD_BONUS = 5; // bonus pts por esquivar hazard con decisión óptima
 
 export default function SimulationPage() {
-  const { selectedComponents, setSimulationResults } = useMissionStore();
+  const { selectedComponents, setSimulationResults, playerList, addPlayerScore } = useMissionStore();
   const router = useRouter();
 
   const [simPhase, setSimPhase] = useState<SimPhase>('launching');
@@ -35,6 +35,8 @@ export default function SimulationPage() {
   const [eventResults, setEventResults] = useState<EventResult[]>([]);
   const [hazardBonuses, setHazardBonuses] = useState<HazardBonus[]>([]);
   const [showHazardBonus, setShowHazardBonus] = useState(false);
+  // Turno: qué jugador decide este evento
+  const currentPlayer = playerList[currentIdx % playerList.length];
 
   useEffect(() => {
     if (selectedComponents.length === 0) {
@@ -61,8 +63,14 @@ export default function SimulationPage() {
 
     const isHazardAvoid = events[currentIdx]?.type === 'hazard' && option.isOptimal;
     const bonusPoints = isHazardAvoid ? HAZARD_BONUS : 0;
+    const totalPoints = option.scoreEffect + bonusPoints;
 
-    setTotalScoreEffect((prev) => prev + option.scoreEffect + bonusPoints);
+    setTotalScoreEffect((prev) => prev + totalPoints);
+
+    // Sumo puntos al jugador de este turno (mínimo 0)
+    if (currentPlayer) {
+      addPlayerScore(currentPlayer.id, Math.max(0, totalPoints));
+    }
 
     if (isHazardAvoid) {
       setShowHazardBonus(true);
@@ -232,23 +240,33 @@ export default function SimulationPage() {
           </span>
         </div>
 
-        {/* Progress dots */}
-        <div className="flex items-center gap-2">
-          {events.map((_, i) => (
-            <div
-              key={i}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                i < currentIdx
-                  ? 'bg-emerald-400'
-                  : i === currentIdx
-                  ? 'bg-cyan-400 animate-pulse'
-                  : 'bg-slate-600'
-              }`}
-            />
-          ))}
-          <span className="text-xs text-slate-500 ml-1">
-            {currentIdx + 1}/{events.length}
-          </span>
+        {/* Player turn + progress */}
+        <div className="flex items-center gap-3">
+          {playerList.length > 1 && currentPlayer && simPhase === 'event' && (
+            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+              ['bg-cyan-500/20 text-cyan-300','bg-purple-500/20 text-purple-300','bg-emerald-500/20 text-emerald-300','bg-amber-500/20 text-amber-300'][currentPlayer.id % 4]
+            }`}>
+              <span>👤</span>
+              <span>{currentPlayer.name}&apos;s turn</span>
+            </div>
+          )}
+          <div className="flex items-center gap-2">
+            {events.map((_, i) => (
+              <div
+                key={i}
+                className={`w-2 h-2 rounded-full transition-colors ${
+                  i < currentIdx
+                    ? 'bg-emerald-400'
+                    : i === currentIdx
+                    ? 'bg-cyan-400 animate-pulse'
+                    : 'bg-slate-600'
+                }`}
+              />
+            ))}
+            <span className="text-xs text-slate-500 ml-1">
+              {currentIdx + 1}/{events.length}
+            </span>
+          </div>
         </div>
       </header>
 
@@ -327,7 +345,9 @@ export default function SimulationPage() {
           {simPhase === 'event' && (
             <div className="space-y-3">
               <p className="text-xs text-slate-500 uppercase tracking-widest mb-3 font-semibold">
-                Mission Control — awaiting your decision:
+                {playerList.length > 1 && currentPlayer
+                  ? `🎮 ${currentPlayer.name} — make your decision:`
+                  : 'Mission Control — awaiting your decision:'}
               </p>
               {currentEvent.options.map((option) => (
                 <button
@@ -439,18 +459,21 @@ export default function SimulationPage() {
           )}
         </div>
 
-        {/* Score tracker */}
-        {totalScoreEffect !== 0 && (
-          <div
-            className={`mt-4 text-xs font-mono ${
-              totalScoreEffect > 0 ? 'text-emerald-400' : 'text-red-400'
-            }`}
-          >
-            Simulation adjustment:{' '}
-            {totalScoreEffect > 0 ? '+' : ''}
-            {totalScoreEffect} pts
-          </div>
-        )}
+        {/* Score tracker + player scores */}
+        <div className="mt-4 flex flex-wrap justify-center gap-3">
+          {totalScoreEffect !== 0 && (
+            <div className={`text-xs font-mono ${totalScoreEffect > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              Simulation: {totalScoreEffect > 0 ? '+' : ''}{totalScoreEffect} pts
+            </div>
+          )}
+          {playerList.length > 1 && playerList.map((p, i) => (
+            <div key={p.id} className={`text-xs font-mono px-2 py-0.5 rounded-full ${
+              ['text-cyan-300 bg-cyan-500/10','text-purple-300 bg-purple-500/10','text-emerald-300 bg-emerald-500/10','text-amber-300 bg-amber-500/10'][i]
+            }`}>
+              {p.name}: {p.score} pts
+            </div>
+          ))}
+        </div>
       </main>
     </div>
   );
