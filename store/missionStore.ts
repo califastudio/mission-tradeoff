@@ -8,6 +8,7 @@ import {
   Player,
 } from '../types/mission';
 import { MARS_MISSION_LIMITS } from '../data/components';
+import { getScenario, MissionScenario } from '../data/scenarios';
 
 const BASE_RESOURCES: Resource = {
   mass: 0,
@@ -108,8 +109,10 @@ interface MissionStore extends MissionState {
   setPlayerName: (id: number, name: string) => void;
   setPlayerReady: (id: number, ready: boolean) => void;
   addPlayerScore: (id: number, points: number) => void;
+  setScenario: (scenarioId: string) => void;
   setSimulationResults: (results: SimulationResultData) => void;
   reset: () => void;
+
 }
 
 const INITIAL_STATE: MissionState = {
@@ -167,6 +170,18 @@ export const useMissionStore = create<MissionStore>((set) => ({
     }),
 
   setPhase: (phase: number) => set(() => ({ phase })),
+  setScenario: (scenarioId: string) => set((state) => {
+    const sc = getScenario(scenarioId);
+    // Recalculate resources with new limits
+    const resources = {
+      ...state.resources,
+      massLimit: sc.massLimit,
+      powerLimit: sc.powerLimit,
+      budgetLimit: sc.budgetLimit,
+    };
+    return { scenario: scenarioId, resources };
+  }),
+
   setPlayers: (players: number) =>
     set(() => ({ players, playerList: buildPlayerList(players) })),
   setPlayerName: (id: number, name: string) =>

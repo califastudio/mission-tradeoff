@@ -22,8 +22,7 @@ export default function Home() {
   const allNamed = playerList.every(p => p.name.trim().length > 0);
 
   const handleStart = () => {
-    setPhase(1);
-    router.push('/game');
+    router.push('/mission');
   };
 
   return (

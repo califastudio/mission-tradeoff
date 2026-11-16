@@ -3,6 +3,7 @@ import { useMissionStore } from '../../store/missionStore';
 import { useRouter } from 'next/navigation';
 import { ALL_COMPONENTS } from '../../data/components';
 import { SpacecraftComponent, ComponentCategory } from '../../types/mission';
+import { getScenario } from '../../data/scenarios';
 
 const CATEGORY_LABELS: Record<ComponentCategory, string> = {
   bus: '🛰️ Spacecraft Bus',
@@ -58,8 +59,9 @@ function ImpactBar({ label, value }: { label: string; value: number }) {
 }
 
 export default function GamePage() {
-  const { selectedComponents, resources, scoreBreakdown, addComponent, removeComponent } = useMissionStore();
+  const { selectedComponents, resources, scoreBreakdown, addComponent, removeComponent, scenario } = useMissionStore();
   const router = useRouter();
+  const sc = getScenario(scenario);
 
   const isSelected = (id: string) => selectedComponents.some((c: SpacecraftComponent) => c.id === id);
 
@@ -75,12 +77,12 @@ export default function GamePage() {
       {/* Header */}
       <header className="border-b border-slate-800 px-6 py-3 flex items-center justify-between bg-slate-900/80 backdrop-blur sticky top-0 z-10">
         <div className="flex items-center gap-4">
-          <button onClick={() => router.push('/')} className="text-slate-400 hover:text-white transition-colors text-sm">
-            ← Back
+          <button onClick={() => router.push('/mission')} className="text-slate-400 hover:text-white transition-colors text-sm">
+            ← Missions
           </button>
           <div>
             <span className="text-cyan-400 font-bold text-sm">MISSION TRADE-OFF</span>
-            <span className="text-slate-500 text-xs ml-2">— Mars Mapping Mission</span>
+            <span className={`text-xs ml-2 ${sc.color}`}>{sc.icon} {sc.name} · {sc.difficultyLabel}</span>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -224,9 +226,9 @@ export default function GamePage() {
           {/* Engineering */}
           <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4 mb-3">
             <h3 className="text-xs font-bold text-slate-400 uppercase mb-3">⚙️ Engineering</h3>
-            <ResourceBar label="Mass" value={resources.mass} max={resources.massLimit} unit="kg" />
-            <ResourceBar label="Budget" value={resources.budget} max={resources.budgetLimit} unit="M$" />
-            <ResourceBar label="Power Consumption" value={powerConsumption} max={resources.powerLimit} unit="W" />
+            <ResourceBar label="Mass" value={resources.mass} max={sc.massLimit} unit="kg" />
+            <ResourceBar label="Budget" value={resources.budget} max={sc.budgetLimit} unit="M$" />
+            <ResourceBar label="Power Consumption" value={powerConsumption} max={sc.powerLimit} unit="W" />
             {resources.dataRate > 0 && (
               <div className="mt-2 text-xs text-slate-400">
                 📡 Data Rate: <span className="text-white font-mono">{resources.dataRate} Mbps</span>
