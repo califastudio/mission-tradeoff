@@ -30,7 +30,7 @@ export default function TutorialOverlay({
     'top-center': 'top-16 left-1/2 -translate-x-1/2',
     'bottom-left': 'bottom-24 left-6',
     'bottom-right': 'bottom-24 right-6',
-    'bottom-center': 'bottom-24 left-1/2 -translate-x-1/2',
+    'bottom-center': 'bottom-6 left-1/2 -translate-x-1/2',
   };
 
   return (
