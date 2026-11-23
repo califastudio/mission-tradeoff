@@ -2,6 +2,9 @@
 import { useMissionStore } from '../../store/missionStore';
 import { useRouter } from 'next/navigation';
 import { SpacecraftComponent } from '../../types/mission';
+import { getLauncher, getOrbit } from '../../data/launchers';
+import { getScenario } from '../../data/scenarios';
+import { ALL_COMPONENTS } from '../../data/components';
 
 function getGrade(score: number): { grade: string; color: string; desc: string } {
   if (score >= 90) return { grade: 'A+', color: 'text-emerald-400', desc: 'Outstanding Mission Design' };
@@ -29,15 +32,18 @@ function ScoreBar({ label, value, color }: { label: string; value: number; color
 }
 
 export default function ReportPage() {
-  const { scoreBreakdown, resources, selectedComponents, simulationResults, playerList, reset } = useMissionStore();
+  const { scoreBreakdown, resources, selectedComponents, simulationResults, playerList, reset, launcher, orbit, scenario } = useMissionStore();
   const router = useRouter();
+
+  const launcherData = getLauncher(launcher);
+  const orbitData = getOrbit(orbit);
+  const sc = getScenario(scenario);
 
   const simMod = simulationResults?.scoreModifier ?? 0;
   const hazardBonuses = simulationResults?.hazardBonuses ?? [];
   const totalHazardBonus = hazardBonuses.reduce((sum, h) => sum + h.bonus, 0);
-  // Clamp final score to 0-100; compute the *effective* change for display
   const finalScore = Math.max(0, Math.min(100, scoreBreakdown.total + simMod));
-  const effectiveSimMod = finalScore - scoreBreakdown.total; // real delta after clamping
+  const effectiveSimMod = finalScore - scoreBreakdown.total;
   const { grade, color, desc } = getGrade(finalScore);
 
   const recommendations: string[] = [];
@@ -54,6 +60,16 @@ export default function ReportPage() {
     reset();
     router.push('/');
   };
+
+  // Decision analysis helpers
+  const primaryObj = ALL_COMPONENTS.find(c => c.id === sc.primaryObjectiveId);
+  const hasPrimary = selectedComponents.some((c: SpacecraftComponent) => c.id === sc.primaryObjectiveId);
+  const usedMass = resources.mass;
+  const massRatio = resources.massLimit > 0 ? Math.round((usedMass / resources.massLimit) * 100) : 0;
+  const baseEnvImpact = launcherData.envImpact + orbitData.envImpact;
+  const extraEnvImpact = Math.max(0, resources.envImpact - baseEnvImpact);
+  const scienceComps = selectedComponents.filter((c: SpacecraftComponent) => c.category === 'instrument');
+  const healthComps = selectedComponents.filter((c: SpacecraftComponent) => c.category === 'health');
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -73,7 +89,7 @@ export default function ReportPage() {
 
       <div className="max-w-4xl mx-auto px-6 py-10">
 
-        {/* Leaderboard — solo si hay más de 1 jugador */}
+        {/* Leaderboard */}
         {playerList.length > 1 && (
           <div className="bg-slate-800/60 border border-cyan-500/30 rounded-2xl p-6 mb-8">
             <h2 className="text-sm font-bold uppercase tracking-widest text-cyan-400 mb-5">
@@ -134,7 +150,7 @@ export default function ReportPage() {
             <ScoreBar label="🌱 Environmental Score (15%)" value={scoreBreakdown.environment} color="text-emerald-400" />
             <ScoreBar label="💚 Crew Health Score (15%)" value={scoreBreakdown.health} color="text-pink-400" />
             {effectiveSimMod !== 0 && (
-              <div className={`mt-4 pt-4 border-t border-slate-700 flex items-center justify-between text-sm`}>
+              <div className="mt-4 pt-4 border-t border-slate-700 flex items-center justify-between text-sm">
                 <span className="text-slate-300">🌌 Simulation Performance</span>
                 <span className={`font-bold ${effectiveSimMod > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                   {effectiveSimMod > 0 ? '+' : ''}{effectiveSimMod} pts
@@ -160,19 +176,119 @@ export default function ReportPage() {
           </div>
         </div>
 
-        {/* Mission Stats */}
+        {/* Decision Analysis */}
+        <div className="bg-slate-800/40 border border-cyan-500/20 rounded-2xl p-6 mb-8">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-cyan-400 mb-5">
+            🔍 What Caused Each Result?
+          </h2>
+          <div className="space-y-4">
+
+            {/* Engineering */}
+            <div className="bg-slate-900/60 rounded-xl p-4 border border-slate-700">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-bold text-cyan-400">⚙️ Engineering Efficiency</span>
+                <span className="text-cyan-400 font-mono font-bold">{scoreBreakdown.efficiency} pts</span>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Your <span className="text-white font-semibold">{launcherData.name}</span> + <span className="text-white font-semibold">{orbitData.name}</span> combination gave you{' '}
+                <span className="text-cyan-300 font-mono">{resources.massLimit.toLocaleString()} kg</span> payload capacity and{' '}
+                <span className="text-cyan-300 font-mono">${resources.budgetLimit}M</span> for spacecraft.
+                You used <span className="text-white font-mono">{usedMass} kg ({massRatio}%)</span>.{' '}
+                {massRatio < 50
+                  ? '✅ Excellent mass efficiency — plenty of margin for safety.'
+                  : massRatio < 85
+                  ? '⚠️ Mass usage is moderate. Consider if all components are necessary.'
+                  : '🚨 Near or over mass limit — this significantly hurts efficiency score.'}
+              </p>
+            </div>
+
+            {/* Science */}
+            <div className="bg-slate-900/60 rounded-xl p-4 border border-slate-700">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-bold text-purple-400">🔬 Science Value</span>
+                <span className="text-purple-400 font-mono font-bold">{scoreBreakdown.science} pts</span>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                {scienceComps.length === 0
+                  ? '❌ No science instruments were added. Science value is 0.'
+                  : `Science instruments added: ${scienceComps.map(c => c.name).join(', ')}.`}{' '}
+                {hasPrimary
+                  ? `✅ Primary objective instrument (${primaryObj?.name ?? sc.primaryObjectiveId}) is onboard.`
+                  : `❌ Primary objective instrument (${primaryObj?.name ?? sc.primaryObjectiveId}) is missing — this is required for full score.`}
+                {sc.scienceMultiplier > 1 && ` This scenario applies a ×${sc.scienceMultiplier} science multiplier for its difficulty.`}
+              </p>
+            </div>
+
+            {/* Environment */}
+            <div className="bg-slate-900/60 rounded-xl p-4 border border-slate-700">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-bold text-emerald-400">🌱 Environmental Score</span>
+                <span className="text-emerald-400 font-mono font-bold">{scoreBreakdown.environment} pts</span>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Launch baseline: <span className="text-white font-mono">{baseEnvImpact}/100</span> (
+                {launcherData.name}: {launcherData.envImpact} + {orbitData.name}: {orbitData.envImpact}).
+                Component contributions: <span className="text-white font-mono">+{extraEnvImpact}</span>.
+                Final impact: <span className={`font-mono font-bold ${resources.envImpact < 40 ? 'text-emerald-400' : resources.envImpact < 70 ? 'text-amber-400' : 'text-red-400'}`}>{resources.envImpact}/100</span>.{' '}
+                {resources.envImpact < 40
+                  ? '✅ Great environmental score — clean mission design!'
+                  : resources.envImpact < 60
+                  ? '⚠️ Moderate impact. Consider ion propulsion for future missions.'
+                  : '🚨 High environmental impact. Chemical propulsion and large buses significantly increase footprint.'}
+              </p>
+            </div>
+
+            {/* Crew Health */}
+            <div className="bg-slate-900/60 rounded-xl p-4 border border-slate-700">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-bold text-pink-400">💚 Crew Health</span>
+                <span className="text-pink-400 font-mono font-bold">{scoreBreakdown.health} pts</span>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Baseline crew risk starts at 50/100.{' '}
+                {healthComps.length === 0
+                  ? '❌ No health/safety components added — crew risk remains at baseline or higher.'
+                  : `Health components added: ${healthComps.map(c => c.name).join(', ')}.`}{' '}
+                Final crew risk: <span className={`font-mono font-bold ${resources.crewRisk < 40 ? 'text-emerald-400' : resources.crewRisk < 65 ? 'text-amber-400' : 'text-red-400'}`}>{resources.crewRisk}/100</span>.{' '}
+                {resources.crewRisk < 30
+                  ? '✅ Excellent crew protection! Well-prepared for the mission.'
+                  : resources.crewRisk < 60
+                  ? '⚠️ Moderate risk. Advanced bio-shielding could improve this.'
+                  : '🚨 High crew risk — shielding and countermeasures are strongly recommended for long missions.'}
+              </p>
+            </div>
+
+            {/* Objectives */}
+            <div className="bg-slate-900/60 rounded-xl p-4 border border-slate-700">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-bold text-blue-400">🎯 Mission Objectives</span>
+                <span className="text-blue-400 font-mono font-bold">{scoreBreakdown.objectives} pts</span>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Primary objective — <span className="text-white font-semibold">{primaryObj?.name ?? sc.primaryObjectiveId}</span>:{' '}
+                {hasPrimary
+                  ? '✅ Met! This component is onboard and active.'
+                  : `❌ Not met. You needed to add "${primaryObj?.name ?? sc.primaryObjectiveId}" from the catalog to unlock full objective score (100 pts vs 40 pts).`}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Mission Stats — 6 stats */}
         <div className="bg-slate-800/40 border border-slate-700 rounded-2xl p-6 mb-8">
           <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-5">Mission Statistics</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {[
               { label: 'Total Mass', value: `${resources.mass} kg`, limit: `/ ${resources.massLimit} kg`, over: resources.mass > resources.massLimit },
               { label: 'Budget', value: `$${resources.budget}M`, limit: `/ $${resources.budgetLimit}M`, over: resources.budget > resources.budgetLimit },
               { label: 'Power Net', value: `${resources.power} W`, limit: resources.power > 0 ? '⚠ Deficit' : '✓ OK', over: resources.power > 0 },
               { label: 'Data Rate', value: `${resources.dataRate} Mbps`, limit: 'downlink', over: false },
+              { label: 'Launch Vehicle', value: launcherData.icon + ' ' + launcherData.name, limit: `$${launcherData.budgetCostM}M cost`, over: false },
+              { label: 'Orbital Design', value: orbitData.icon + ' ' + orbitData.name, limit: `×${orbitData.massMultiplier} mass factor`, over: false },
             ].map((stat) => (
               <div key={stat.label} className="bg-slate-900/60 rounded-xl p-3 text-center">
                 <div className="text-xs text-slate-500 mb-1">{stat.label}</div>
-                <div className={`text-lg font-bold ${stat.over ? 'text-red-400' : 'text-white'}`}>{stat.value}</div>
+                <div className={`text-sm font-bold ${stat.over ? 'text-red-400' : 'text-white'} leading-tight`}>{stat.value}</div>
                 <div className={`text-xs ${stat.over ? 'text-red-400' : 'text-slate-500'}`}>{stat.limit}</div>
               </div>
             ))}

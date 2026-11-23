@@ -20,7 +20,7 @@ export default function MissionSelectPage() {
   const handleSelect = (id: string) => {
     setScenario(id);
     setPhase(1);
-    router.push('/game');
+    router.push('/launcher');
   };
 
   return (

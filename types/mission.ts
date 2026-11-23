@@ -97,9 +97,17 @@ export interface MissionState {
   players: number;
   playerList: Player[];
   scenario: string;
+  launcher: string;
+  orbit: string;
   selectedComponents: SpacecraftComponent[];
   resources: Resource;
   missionScore: number;
   scoreBreakdown: ScoreBreakdown;
   simulationResults: SimulationResultData | null;
+}
+
+export interface LauncherOrbitEffect {
+  effectiveMassLimit: number;
+  effectiveBudgetLimit: number;
+  baseEnvImpact: number;
 }

@@ -8,24 +8,50 @@ import {
   Player,
 } from '../types/mission';
 import { MARS_MISSION_LIMITS } from '../data/components';
-import { getScenario, MissionScenario } from '../data/scenarios';
+import { getScenario } from '../data/scenarios';
+import { getLauncher, getOrbit } from '../data/launchers';
+
+interface EffectiveLimits {
+  massLimit: number;
+  budgetLimit: number;
+  powerLimit: number;
+  baseEnvImpact: number;
+}
+
+function getEffectiveLimits(scenarioId: string, launcherId: string, orbitId: string): EffectiveLimits {
+  const sc = getScenario(scenarioId);
+  const launcher = getLauncher(launcherId);
+  const orbit = getOrbit(orbitId);
+  return {
+    massLimit: Math.round(launcher.payloadKg * orbit.massMultiplier),
+    budgetLimit: Math.max(50, sc.budgetLimit - launcher.budgetCostM),
+    powerLimit: sc.powerLimit,
+    baseEnvImpact: launcher.envImpact + orbit.envImpact,
+  };
+}
+
+const DEFAULT_LAUNCHER = 'falcon9';
+const DEFAULT_ORBIT = 'interplanetary';
+const DEFAULT_SCENARIO = 'mars-mapping';
+
+const DEFAULT_LIMITS = getEffectiveLimits(DEFAULT_SCENARIO, DEFAULT_LAUNCHER, DEFAULT_ORBIT);
 
 const BASE_RESOURCES: Resource = {
   mass: 0,
-  massLimit: MARS_MISSION_LIMITS.massLimit,
+  massLimit: DEFAULT_LIMITS.massLimit,
   power: 0,
-  powerLimit: MARS_MISSION_LIMITS.powerLimit,
+  powerLimit: DEFAULT_LIMITS.powerLimit,
   budget: 0,
-  budgetLimit: MARS_MISSION_LIMITS.budgetLimit,
+  budgetLimit: DEFAULT_LIMITS.budgetLimit,
   dataRate: 0,
-  envImpact: 0,
+  envImpact: DEFAULT_LIMITS.baseEnvImpact,
   crewRisk: 50,
   scienceValue: 0,
 };
 
-function calculateResources(components: SpacecraftComponent[]): Resource {
+function calculateResources(components: SpacecraftComponent[], limits: EffectiveLimits): Resource {
   let mass = 0, power = 0, budget = 0, dataRate = 0;
-  let envImpact = 0, crewRisk = 50, scienceValue = 0;
+  let envImpact = limits.baseEnvImpact, crewRisk = 50, scienceValue = 0;
 
   for (const c of components) {
     mass += c.mass || 0;
@@ -39,11 +65,11 @@ function calculateResources(components: SpacecraftComponent[]): Resource {
 
   return {
     mass,
-    massLimit: MARS_MISSION_LIMITS.massLimit,
+    massLimit: limits.massLimit,
     power,
-    powerLimit: MARS_MISSION_LIMITS.powerLimit,
+    powerLimit: limits.powerLimit,
     budget,
-    budgetLimit: MARS_MISSION_LIMITS.budgetLimit,
+    budgetLimit: limits.budgetLimit,
     dataRate,
     envImpact,
     crewRisk,
@@ -53,17 +79,19 @@ function calculateResources(components: SpacecraftComponent[]): Resource {
 
 function calculateScore(
   resources: Resource,
-  components: SpacecraftComponent[]
+  components: SpacecraftComponent[],
+  scenarioId: string
 ): ScoreBreakdown {
-  const hasHiRes = components.some((c) => c.id === 'inst-hires-cam');
-  const objectives = hasHiRes ? 100 : 40;
+  const sc = getScenario(scenarioId);
+  const hasPrimary = components.some((c) => c.id === sc.primaryObjectiveId);
+  const objectives = hasPrimary ? 100 : 40;
 
   const massRatio = resources.mass / resources.massLimit;
   const powerRatio = Math.max(0, resources.power) / resources.powerLimit;
   const budgetRatio = resources.budget / resources.budgetLimit;
   const efficiency = Math.max(0, 100 - ((massRatio + powerRatio + budgetRatio) / 3) * 60);
 
-  const science = resources.scienceValue;
+  const science = Math.min(100, resources.scienceValue * sc.scienceMultiplier);
   const environment = Math.max(0, 100 - resources.envImpact);
   const health = Math.max(0, 100 - resources.crewRisk);
 
@@ -110,16 +138,19 @@ interface MissionStore extends MissionState {
   setPlayerReady: (id: number, ready: boolean) => void;
   addPlayerScore: (id: number, points: number) => void;
   setScenario: (scenarioId: string) => void;
+  setLauncher: (launcherId: string) => void;
+  setOrbit: (orbitId: string) => void;
   setSimulationResults: (results: SimulationResultData) => void;
   reset: () => void;
-
 }
 
 const INITIAL_STATE: MissionState = {
   phase: 0,
   players: 1,
   playerList: buildPlayerList(1),
-  scenario: 'mars-mapping',
+  scenario: DEFAULT_SCENARIO,
+  launcher: DEFAULT_LAUNCHER,
+  orbit: DEFAULT_ORBIT,
   selectedComponents: [],
   resources: { ...BASE_RESOURCES },
   missionScore: 0,
@@ -146,8 +177,9 @@ export const useMissionStore = create<MissionStore>((set) => ({
       )
         return state;
       const updated = [...state.selectedComponents, component];
-      const resources = calculateResources(updated);
-      const scoreBreakdown = calculateScore(resources, updated);
+      const limits = getEffectiveLimits(state.scenario, state.launcher, state.orbit);
+      const resources = calculateResources(updated, limits);
+      const scoreBreakdown = calculateScore(resources, updated, state.scenario);
       return {
         selectedComponents: updated,
         resources,
@@ -159,8 +191,9 @@ export const useMissionStore = create<MissionStore>((set) => ({
   removeComponent: (id: string) =>
     set((state) => {
       const updated = state.selectedComponents.filter((c) => c.id !== id);
-      const resources = calculateResources(updated);
-      const scoreBreakdown = calculateScore(resources, updated);
+      const limits = getEffectiveLimits(state.scenario, state.launcher, state.orbit);
+      const resources = calculateResources(updated, limits);
+      const scoreBreakdown = calculateScore(resources, updated, state.scenario);
       return {
         selectedComponents: updated,
         resources,
@@ -170,39 +203,75 @@ export const useMissionStore = create<MissionStore>((set) => ({
     }),
 
   setPhase: (phase: number) => set(() => ({ phase })),
-  setScenario: (scenarioId: string) => set((state) => {
-    const sc = getScenario(scenarioId);
-    // Recalculate resources with new limits
-    const resources = {
-      ...state.resources,
-      massLimit: sc.massLimit,
-      powerLimit: sc.powerLimit,
-      budgetLimit: sc.budgetLimit,
-    };
-    return { scenario: scenarioId, resources };
-  }),
+
+  setScenario: (scenarioId: string) =>
+    set((state) => {
+      const limits = getEffectiveLimits(scenarioId, state.launcher, state.orbit);
+      const resources = calculateResources(state.selectedComponents, limits);
+      const scoreBreakdown = calculateScore(resources, state.selectedComponents, scenarioId);
+      return {
+        scenario: scenarioId,
+        resources,
+        scoreBreakdown,
+        missionScore: scoreBreakdown.total,
+      };
+    }),
+
+  setLauncher: (launcherId: string) =>
+    set((state) => {
+      const limits = getEffectiveLimits(state.scenario, launcherId, state.orbit);
+      const resources = calculateResources(state.selectedComponents, limits);
+      const scoreBreakdown = calculateScore(resources, state.selectedComponents, state.scenario);
+      return {
+        launcher: launcherId,
+        resources,
+        scoreBreakdown,
+        missionScore: scoreBreakdown.total,
+      };
+    }),
+
+  setOrbit: (orbitId: string) =>
+    set((state) => {
+      const limits = getEffectiveLimits(state.scenario, state.launcher, orbitId);
+      const resources = calculateResources(state.selectedComponents, limits);
+      const scoreBreakdown = calculateScore(resources, state.selectedComponents, state.scenario);
+      return {
+        orbit: orbitId,
+        resources,
+        scoreBreakdown,
+        missionScore: scoreBreakdown.total,
+      };
+    }),
 
   setPlayers: (players: number) =>
     set(() => ({ players, playerList: buildPlayerList(players) })),
+
   setPlayerName: (id: number, name: string) =>
     set((state) => ({
       playerList: state.playerList.map((p) =>
         p.id === id ? { ...p, name } : p
       ),
     })),
+
   setPlayerReady: (id: number, ready: boolean) =>
     set((state) => ({
       playerList: state.playerList.map((p) =>
         p.id === id ? { ...p, ready } : p
       ),
     })),
+
   addPlayerScore: (id: number, points: number) =>
     set((state) => ({
       playerList: state.playerList.map((p) =>
         p.id === id ? { ...p, score: p.score + points } : p
       ),
     })),
+
   setSimulationResults: (results: SimulationResultData) =>
     set(() => ({ simulationResults: results })),
+
   reset: () => set(() => ({ ...INITIAL_STATE })),
 }));
+
+// Keep MARS_MISSION_LIMITS export for backwards compatibility
+export { MARS_MISSION_LIMITS };
