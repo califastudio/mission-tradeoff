@@ -71,7 +71,7 @@ export default function SpotlightTutorial({ onComplete }: { onComplete: () => vo
       case 'left':
         return { top: rect.top + PADDING, right: window.innerWidth - rect.left + 20 };
       case 'bottom':
-        return { top: rect.bottom + 20, left: rect.left + PADDING };
+        return { top: Math.min(rect.bottom + 20, window.innerHeight - 260), left: '50%', transform: 'translateX(-50%)' };
       case 'top':
         return { bottom: window.innerHeight - rect.top + 20, left: rect.left + PADDING };
       default:
