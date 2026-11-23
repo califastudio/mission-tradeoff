@@ -87,9 +87,8 @@ export default function Home() {
 
   const handleTutorialComplete = () => {
     localStorage.setItem('mto-tutorial-seen', '1');
+    localStorage.setItem('mto-spotlight-pending', '1'); // signal for game page
     setShowTutorial(false);
-    // If completing (not skipping), go to game in tutorial mode
-    setTutorialMode(true);
     router.push('/game');
   };
 

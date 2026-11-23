@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMissionStore } from '../../store/missionStore';
 import SpotlightTutorial from '../../components/SpotlightTutorial';
 import { useRouter } from 'next/navigation';
@@ -125,12 +125,22 @@ function GameGuideModal({ onClose }: { onClose: () => void }) {
 }
 
 export default function GamePage() {
-  const { selectedComponents, resources, scoreBreakdown, addComponent, removeComponent, scenario, launcher, orbit, tutorialMode, setTutorialMode } = useMissionStore();
+  const { selectedComponents, resources, scoreBreakdown, addComponent, removeComponent, scenario, launcher, orbit, setTutorialMode } = useMissionStore();
   const router = useRouter();
   const sc = getScenario(scenario);
   const selectedLauncherData = getLauncher(launcher);
   const selectedOrbitData = getOrbit(orbit);
   const [showGuide, setShowGuide] = useState(false);
+  const [spotlightActive, setSpotlightActive] = useState(false);
+
+  // Check if spotlight was requested via localStorage (survives navigation)
+  useEffect(() => {
+    const pending = localStorage.getItem('mto-spotlight-pending');
+    if (pending === '1') {
+      localStorage.removeItem('mto-spotlight-pending');
+      setSpotlightActive(true);
+    }
+  }, []);
 
   const isSelected = (id: string) => selectedComponents.some((c: SpacecraftComponent) => c.id === id);
 
@@ -396,7 +406,7 @@ export default function GamePage() {
       </button>
 
       {/* Spotlight Tutorial */}
-      {tutorialMode && <SpotlightTutorial onComplete={() => setTutorialMode(false)} />}
+      {spotlightActive && <SpotlightTutorial onComplete={() => setSpotlightActive(false)} />}
     </div>
   );
 }
