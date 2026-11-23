@@ -104,6 +104,7 @@ export interface MissionState {
   missionScore: number;
   scoreBreakdown: ScoreBreakdown;
   simulationResults: SimulationResultData | null;
+  tutorialMode: boolean;
 }
 
 export interface LauncherOrbitEffect {

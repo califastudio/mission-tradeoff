@@ -52,10 +52,11 @@ const HOME_TUTORIAL_STEPS: TutorialStep[] = [
     position: 'center',
   },
   {
-    id: 'report',
-    title: 'Read Your Mission Report',
-    emoji: '📋',
-    description: 'After the simulation, you get a full report breaking down your score across engineering, science, environment, and crew health — with an explanation of exactly what caused each result.',
+    id: 'builder-preview',
+    title: '¡Te mostramos el constructor!',
+    emoji: '🎮',
+    description: 'Ahora te vamos a guiar paso a paso por el constructor de la nave, en modo foco — todo oscuro excepto la parte que estás explorando.',
+    hint: 'Podés saltar el tutorial en cualquier momento.',
     position: 'center',
   },
 ];
@@ -72,7 +73,7 @@ const STARS = Array.from({ length: 80 }, (_, i) => {
 });
 
 export default function Home() {
-  const { players, setPlayers, setPhase, playerList, setPlayerName } = useMissionStore();
+  const { players, setPlayers, setPhase, playerList, setPlayerName, setTutorialMode } = useMissionStore();
   const router = useRouter();
   const [step, setStep] = useState<'config' | 'names'>('config');
   const [showTutorial, setShowTutorial] = useState(false);
@@ -87,6 +88,9 @@ export default function Home() {
   const handleTutorialComplete = () => {
     localStorage.setItem('mto-tutorial-seen', '1');
     setShowTutorial(false);
+    // If completing (not skipping), go to game in tutorial mode
+    setTutorialMode(true);
+    router.push('/game');
   };
 
   const handleTutorialSkip = () => {

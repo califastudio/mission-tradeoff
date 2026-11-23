@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useMissionStore } from '../../store/missionStore';
+import SpotlightTutorial from '../../components/SpotlightTutorial';
 import { useRouter } from 'next/navigation';
 import { ALL_COMPONENTS } from '../../data/components';
 import { SpacecraftComponent, ComponentCategory } from '../../types/mission';
@@ -124,7 +125,7 @@ function GameGuideModal({ onClose }: { onClose: () => void }) {
 }
 
 export default function GamePage() {
-  const { selectedComponents, resources, scoreBreakdown, addComponent, removeComponent, scenario, launcher, orbit } = useMissionStore();
+  const { selectedComponents, resources, scoreBreakdown, addComponent, removeComponent, scenario, launcher, orbit, tutorialMode, setTutorialMode } = useMissionStore();
   const router = useRouter();
   const sc = getScenario(scenario);
   const selectedLauncherData = getLauncher(launcher);
@@ -393,6 +394,9 @@ export default function GamePage() {
       >
         ?
       </button>
+
+      {/* Spotlight Tutorial */}
+      {tutorialMode && <SpotlightTutorial onComplete={() => setTutorialMode(false)} />}
     </div>
   );
 }

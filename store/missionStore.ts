@@ -141,6 +141,7 @@ interface MissionStore extends MissionState {
   setLauncher: (launcherId: string) => void;
   setOrbit: (orbitId: string) => void;
   setSimulationResults: (results: SimulationResultData) => void;
+  setTutorialMode: (v: boolean) => void;
   reset: () => void;
 }
 
@@ -163,6 +164,7 @@ const INITIAL_STATE: MissionState = {
     total: 0,
   },
   simulationResults: null as SimulationResultData | null,
+  tutorialMode: false,
 };
 
 export const useMissionStore = create<MissionStore>((set) => ({
@@ -269,6 +271,8 @@ export const useMissionStore = create<MissionStore>((set) => ({
 
   setSimulationResults: (results: SimulationResultData) =>
     set(() => ({ simulationResults: results })),
+
+  setTutorialMode: (v: boolean) => set(() => ({ tutorialMode: v })),
 
   reset: () => set(() => ({ ...INITIAL_STATE })),
 }));
