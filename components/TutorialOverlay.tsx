@@ -35,15 +35,26 @@ export default function TutorialOverlay({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex">
-      {/* Step progress dots */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 flex gap-2">
+      {/* Step progress numbers */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
         {steps.map((_, i) => (
-          <div
-            key={i}
-            className={`h-2 rounded-full transition-all ${
-              i === current ? 'bg-cyan-400 w-4' : i < current ? 'bg-cyan-700 w-2' : 'bg-slate-600 w-2'
-            }`}
-          />
+          <div key={i} className="flex items-center gap-1.5">
+            <button
+              onClick={() => setCurrent(i)}
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black transition-all ${
+                i === current
+                  ? 'bg-cyan-400 text-black scale-110 shadow-lg shadow-cyan-400/40'
+                  : i < current
+                  ? 'bg-cyan-800 text-cyan-300'
+                  : 'bg-slate-700 text-slate-500'
+              }`}
+            >
+              {i + 1}
+            </button>
+            {i < steps.length - 1 && (
+              <div className={`w-4 h-0.5 rounded-full transition-all ${i < current ? 'bg-cyan-700' : 'bg-slate-700'}`} />
+            )}
+          </div>
         ))}
       </div>
 
@@ -52,15 +63,20 @@ export default function TutorialOverlay({
         onClick={onSkip}
         className="absolute top-4 right-6 text-slate-400 hover:text-white text-sm transition-colors"
       >
-        Skip tutorial ×
+        Saltar ×
       </button>
 
       {/* Step card */}
       <div className={`absolute ${positionClasses[step.position]} max-w-sm w-[90vw]`}>
         <div className="bg-slate-900 border border-cyan-500/50 rounded-2xl p-6 shadow-2xl shadow-cyan-500/20">
           {/* Step counter */}
-          <div className="text-xs text-cyan-400/60 uppercase tracking-widest mb-3 font-semibold">
-            Step {current + 1} of {steps.length}
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-6 h-6 rounded-full bg-cyan-400 text-black text-xs font-black flex items-center justify-center flex-shrink-0">
+              {current + 1}
+            </div>
+            <div className="text-xs text-cyan-400/60 uppercase tracking-widest font-semibold">
+              de {steps.length} pasos
+            </div>
           </div>
 
           {/* Title */}
@@ -88,7 +104,7 @@ export default function TutorialOverlay({
               }}
               className="flex-1 bg-cyan-500 hover:bg-cyan-400 text-black font-black py-2.5 rounded-xl transition-all hover:scale-[1.02] text-sm"
             >
-              {isLast ? '🚀 Start Playing!' : 'Next →'}
+              {isLast ? '🚀 ¡Empezar a jugar!' : 'Siguiente →'}
             </button>
           </div>
         </div>
