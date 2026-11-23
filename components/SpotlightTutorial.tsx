@@ -28,7 +28,7 @@ const SPOTLIGHT_STEPS: SpotlightStep[] = [
     description: 'Los componentes que agregás aparecen acá. Podés eliminarlos con el botón ×. Cuando tengas todo listo, aparece el botón para simular.',
     hint: 'Necesitás al menos: bus, fuente de energía, sistema de comunicación e instrumento principal.',
     selector: 'main',
-    cardPosition: 'top',
+    cardPosition: 'bottom',
   },
   {
     id: 'dashboard',
