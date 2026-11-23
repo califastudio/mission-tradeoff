@@ -4,6 +4,7 @@ import { useMissionStore } from '../../store/missionStore';
 import { useRouter } from 'next/navigation';
 import { pickSimulationEvents } from '../../data/simulationEvents';
 import { SimulationEvent, EventOption, EventResult, HazardBonus } from '../../types/mission';
+import { getScenario } from '../../data/scenarios';
 
 // Deterministic starfield (SSR-safe)
 const STARS = Array.from({ length: 60 }, (_, i) => {
@@ -22,8 +23,9 @@ type SimPhase = 'launching' | 'in-flight' | 'event' | 'resolved' | 'complete';
 const HAZARD_BONUS = 5; // bonus pts por esquivar hazard con decisión óptima
 
 export default function SimulationPage() {
-  const { selectedComponents, setSimulationResults, playerList, addPlayerScore } = useMissionStore();
+  const { selectedComponents, setSimulationResults, playerList, addPlayerScore, scenario } = useMissionStore();
   const router = useRouter();
+  const sc = getScenario(scenario);
 
   const [simPhase, setSimPhase] = useState<SimPhase>('launching');
   const [events, setEvents] = useState<SimulationEvent[]>([]);
@@ -178,7 +180,7 @@ export default function SimulationPage() {
       <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">🛸</div>
-          <p className="text-xl font-bold text-white mb-1">En route to Mars</p>
+          <p className="text-xl font-bold text-white mb-1">En route to {sc.destination}</p>
           <p className="text-slate-400 text-sm">Preparing mission simulation…</p>
         </div>
       </div>
@@ -218,7 +220,7 @@ export default function SimulationPage() {
             MISSION TRADE-OFF
           </span>
           <span className="text-slate-500 text-xs hidden sm:block">
-            — Mars Mapping Mission
+            — {sc.name}
           </span>
           <div className="text-xs text-slate-400">
             📅 Day{' '}

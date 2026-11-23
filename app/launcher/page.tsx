@@ -61,6 +61,11 @@ export default function LauncherPage() {
           </div>
         </div>
 
+        {/* Contextual tip */}
+        <div className="mb-6 bg-cyan-950/40 border border-cyan-500/20 rounded-xl px-4 py-2 text-xs text-cyan-300/80">
+          💡 Your launcher choice sets the mass limit for your spacecraft. Your orbit choice applies a multiplier on top of that.
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* LEFT: Launcher + Orbit selection */}
           <div className="lg:col-span-2 space-y-8">

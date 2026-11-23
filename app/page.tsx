@@ -1,7 +1,64 @@
 'use client';
 import { useMissionStore } from '../store/missionStore';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import TutorialOverlay, { TutorialStep } from '../components/TutorialOverlay';
+
+const HOME_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    id: 'welcome',
+    title: 'Welcome to Mission Trade-Off',
+    emoji: '🛸',
+    description: 'You are about to design a real space mission from scratch. Every decision you make has consequences — on engineering, the environment, and your crew.',
+    hint: 'This game is based on real NASA mission data. The constraints are real.',
+    position: 'center',
+  },
+  {
+    id: 'players',
+    title: 'Choose Your Crew Size',
+    emoji: '👥',
+    description: 'Play solo or with up to 4 players. In multiplayer, each player takes turns making critical decisions during the mission simulation.',
+    hint: 'Each player earns points based on how well they handle their assigned events.',
+    position: 'bottom-center',
+  },
+  {
+    id: 'missions',
+    title: 'Pick Your Mission',
+    emoji: '🎯',
+    description: 'On the next screen, you will choose your destination — from the Moon (easy) to Alpha Centauri (legendary). Each mission has different resource limits.',
+    position: 'center',
+  },
+  {
+    id: 'launcher',
+    title: 'Choose Your Rocket & Orbit',
+    emoji: '🚀',
+    description: 'Before building your spacecraft, you choose the launch vehicle and orbital trajectory. This directly sets how much mass and budget you have for components.',
+    hint: 'Falcon 9 + Interplanetary = 1,040 kg payload at $320M budget. SLS gives more mass but costs $100M just to launch.',
+    position: 'center',
+  },
+  {
+    id: 'builder',
+    title: 'Build Your Spacecraft',
+    emoji: '⚙️',
+    description: 'Pick components from the catalog. Watch the mass, power, and budget bars in real time. Every component you add shifts the balance — add too much and you cannot launch.',
+    hint: 'You need at minimum: a spacecraft bus, a power source, a comm system, and your primary instrument.',
+    position: 'center',
+  },
+  {
+    id: 'simulation',
+    title: 'Survive the Mission',
+    emoji: '🌌',
+    description: 'Once launched, unexpected events happen — debris conjunctions, solar flares, equipment failures. Each player votes on how to respond. The right call earns bonus points.',
+    position: 'center',
+  },
+  {
+    id: 'report',
+    title: 'Read Your Mission Report',
+    emoji: '📋',
+    description: 'After the simulation, you get a full report breaking down your score across engineering, science, environment, and crew health — with an explanation of exactly what caused each result.',
+    position: 'center',
+  },
+];
 
 // Pre-computed star positions (avoids Math.random during prerender)
 const STARS = Array.from({ length: 80 }, (_, i) => {
@@ -18,6 +75,24 @@ export default function Home() {
   const { players, setPlayers, setPhase, playerList, setPlayerName } = useMissionStore();
   const router = useRouter();
   const [step, setStep] = useState<'config' | 'names'>('config');
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  useEffect(() => {
+    const seen = localStorage.getItem('mto-tutorial-seen');
+    if (!seen) {
+      setShowTutorial(true);
+    }
+  }, []);
+
+  const handleTutorialComplete = () => {
+    localStorage.setItem('mto-tutorial-seen', '1');
+    setShowTutorial(false);
+  };
+
+  const handleTutorialSkip = () => {
+    localStorage.setItem('mto-tutorial-seen', '1');
+    setShowTutorial(false);
+  };
 
   const allNamed = playerList.every(p => p.name.trim().length > 0);
 
@@ -27,6 +102,21 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center relative overflow-hidden">
+      {showTutorial && (
+        <TutorialOverlay
+          steps={HOME_TUTORIAL_STEPS}
+          onComplete={handleTutorialComplete}
+          onSkip={handleTutorialSkip}
+        />
+      )}
+
+      {/* Tutorial button top-right */}
+      <button
+        onClick={() => setShowTutorial(true)}
+        className="absolute top-4 right-6 z-10 text-xs text-slate-400 hover:text-cyan-400 transition-colors border border-slate-700 hover:border-cyan-500/50 rounded-xl px-3 py-1.5"
+      >
+        📖 Tutorial
+      </button>
       {/* Stars background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {STARS.map((star, i) => (
@@ -139,6 +229,12 @@ export default function Home() {
               className="w-full bg-cyan-500 hover:bg-cyan-400 text-black font-black text-lg py-4 rounded-2xl transition-all hover:scale-[1.02] shadow-lg shadow-cyan-500/30"
             >
               → Enter Player Names
+            </button>
+            <button
+              onClick={() => setShowTutorial(true)}
+              className="w-full mt-3 border border-slate-700 hover:border-cyan-500/50 text-slate-400 hover:text-cyan-400 font-semibold text-sm py-3 rounded-2xl transition-all"
+            >
+              📖 How to Play
             </button>
           </div>
         )}

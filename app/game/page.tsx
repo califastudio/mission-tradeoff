@@ -62,7 +62,7 @@ function ImpactBar({ label, value }: { label: string; value: number }) {
 
 function GameGuideModal({ onClose }: { onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
       <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-black text-cyan-400">🎮 How to Play</h2>
@@ -103,6 +103,7 @@ function GameGuideModal({ onClose }: { onClose: () => void }) {
           <div className="border-t border-slate-800 pt-4 bg-slate-800/40 rounded-xl p-3">
             <h3 className="font-bold text-amber-400 mb-1">🚀 Launcher &amp; Orbit Matter!</h3>
             <p className="text-slate-400">The launch vehicle you chose affects your maximum payload mass and spacecraft budget. The orbital trajectory multiplies (or reduces) your effective mass capacity. These limits are shown in the dashboard.</p>
+            <p className="text-amber-300/80 text-xs mt-2">Your mass and budget limits were set by your launcher+orbit choice on the previous screen.</p>
           </div>
 
           <div className="border-t border-slate-800 pt-4">
